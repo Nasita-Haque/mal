@@ -1,0 +1,55 @@
+/* styles */
+/* called by your view template */
+
+* {
+  box-sizing: border-box;
+  text-align: center;
+}
+
+body {
+  font-family: 'Marmelad', sans-serif;
+  margin: 2em;
+}
+
+h1 {
+  color: #e4504e;
+  font-size: 4vw;
+}
+
+.search-term {
+  outline: 0;
+  border-width: 0 0 3px;
+  border-color: pink;
+  width: 50%;
+  font-size: 2em;
+  font-family: 'Marmelad', sans-serif;
+}
+
+#search-button{
+  outline: 0;
+  cursor: pointer;
+  border-width: 2px;
+  border-color: pink;
+  border-radius: 20px;
+  color: #b3b3b3;
+  font-family: 'Marmelad', sans-serif;
+  width: 10.5%;
+  height: 20%;
+  font-size: 2vw;
+}
+
+input, select, textarea{
+    color: #e4504e;
+}
+
+::placeholder{
+  color:#e6e6e6;
+  font-size: 2vw;
+}
+
+#search-button:hover { 
+  color: #e4504e;
+}
+
+
+
