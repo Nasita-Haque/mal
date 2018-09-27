@@ -10,13 +10,17 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.16.3",
     "axios": "^0.18.0",
+    "express": "^4.16.3",
+    "ioredis": "^4.0.0",
     "jikanjs": "^0.6.0",
     "jquery": "^3.3.1",
     "less": "^3.8.1",
+    "less-loader": "^4.1.0",
     "less-middleware": "^3.0.1",
-    "less-loader": "^4.1.0"
+    "ratelimit.js": "^1.8.0",
+    "redis": "^2.8.0",
+    "request": "^2.88.0"
   },
   "engines": {
     "node": "8.x"

@@ -15,11 +15,7 @@ $(document).ready(() => {
       data: "data",
       dataType: "json",
       success: (data) => {
-        // let songs = data["anime"]
         console.log('DATA =>', data)
-        // let filterTV = songs.filter((anime) => anime["type"] === "TV")
-        // let tv = filterTV.map((anime) => {title: , image_url:})
-        // console.log('TEMP', tv)
       }
     });
   });
