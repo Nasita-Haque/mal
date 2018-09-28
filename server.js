@@ -3,8 +3,9 @@ const express = require('express');
 const app = express();
 const jikanjs  = require('jikanjs');
 const request = require('request');
+const fetch = require('node-fetch');
 
-//RATE LIMITING FOR JIKAN JS
+// // RATE LIMITING FOR JIKAN JS
 // const rateLimit = require('ratelimit.js').RateLimit;
 // const redis = require('redis');
 // const ExpressMiddleware = require('ratelimit.js').ExpressMiddleware;
@@ -23,72 +24,64 @@ const request = require('request');
 
 app.use(express.static(__dirname + '/public'));
 
-//unofficial MAL API
 app.get('/search', (req, res, next) => {
-  jikanjs.loadSeason(2017, 'summer')
-  .then((response) => {
-    let songs = response["anime"]
-    let filterTV = songs.filter((anime) => anime["type"] === "TV")
-    let animeID = filterTV.map(anime => anime["mal_id"])
-    console.log('ANIME ID LENGTH => ', animeID.length)
-    return animeID
-  })
-  .then((animeID) => {
-    let animeSongData = []
-    for(let i = 0; i < animeID.length; i++){
-      request('https://api.jikan.moe/v3/anime/' + animeID[i], function (error, response, body) {
-        console.log('i', i)
-        console.log('ID', animeID[i])
-        animeSongData.push(response.body)
-        if(i === animeID.length-1){console.log('SONG DATA:', animeSongData)}
-      });
-    }
-  })
-  .catch((err) => { 
-    console.log('NOT WORKING') 
-  })
-  
-});
+  const seasonUrl = 'https://api.jikan.moe/v3/season/2018/summer'
+  const animeUrl = 'https://api.jikan.moe/v3/anime/'
+  let animeID = "hello world"
 
-// //unofficial MAL API
-// app.get('/search', (req, res, next) => {
-//   jikanjs.loadSeason(2017, 'summer')
-//   .then((response) => {
-//     let songs = response["anime"]
-//     let filterTV = songs.filter((anime) => anime["type"] === "TV")
-//     let animeID = filterTV.map(anime => anime["mal_id"])
-//     console.log('ANIME ID LENGTH => ', animeID.length)
-//     return animeID
-//   })
-//   .then((animeID) => {
-//     let animeSongData = []
-//     for(let i = 0; i < animeID.length; i++){
+  const getSeasonData = async seasonUrl => {
+    try {
+      const response = await fetch(seasonUrl);
+      const json = await response.json();
       
-//       jikanjs.loadAnime(animeID[i])
-//       .then((response) =>{
-//         console.log('i', i)
-//         animeSongData.push({
-//           "title": response.title, 
-//           "op":response.opening_themes, 
-//           "ed":response.ending_themes, 
-//           "url": response.url, 
-//           "image_url":response.image_url
-//         })
-//         if (i === animeID.length-1){
-//           console.log("SONGDATA", animeSongData.length)
-//           res.send(animeSongData)
-//         }
-//       }).catch(function (err) {
-//         console.log('NOT WORKING') 
-//       });
-//     }
+      const songs = json["anime"]
+      const filterTV = songs.filter((anime) => anime["type"] === "TV")
+      const filterAnimeID = filterTV.map(anime => anime["mal_id"])
+      
+      //pass anime ID to anime API 
+      getAnimeSongs(filterAnimeID)
+      
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  
+  getSeasonData(seasonUrl);
+  
+  //Get anime songs from API 
+  const getAnimeSongs = (animeID) => {
     
-//   })
-//   .catch((err) => {
-//     console.log('NOT WORKING')
-//   })
-// });
+    async function getAnimeSongData() {
+      let start = 0
+      let end = 20
+        try {
+          let promises = animeID.slice(start, end).map(id => {
+            
+          //to request more anime song Data 
+          if(end <= animeID.length && (animeID.length - end) < 20){
+            start = end 
+            end += animeID.length - start
+            
+          } else if (end <= animeID.length){
+            start = end 
+            end += 20
+          }
+          
+          let data =  fetch(`${animeUrl}${id}`).then((resp) => resp.json())
+          console.log(data)
+          return data
+          });
+          let animeSong = await Promise.all(promises);
+          // console.log('animeSong =>', animeSong[0]);
+          res.send(animeSong)
 
+        } catch (error){
+          console.log(error)
+        }
+      }
+    getAnimeSongData()
+  }
+})
   
 //view
 app.get('/', function(request, response) {

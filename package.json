@@ -20,7 +20,9 @@
     "less-middleware": "^3.0.1",
     "ratelimit.js": "^1.8.0",
     "redis": "^2.8.0",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "node-fetch": "^2.2.0"
   },
   "engines": {
     "node": "8.x"
