@@ -2,39 +2,26 @@
 const express = require('express');
 const app = express();
 const jikanjs  = require('jikanjs');
-const request = require('request');
 const fetch = require('node-fetch');
-
-// // RATE LIMITING FOR JIKAN JS
-// const rateLimit = require('ratelimit.js').RateLimit;
-// const redis = require('redis');
-// const ExpressMiddleware = require('ratelimit.js').ExpressMiddleware;
-
-// const rateLimiter = new rateLimit(redis.createClient(), [{interval: 1, limit: 10}]);
-
-// const options = {
-//   ignoreRedisErrors: true 
-// };
-
-// const limitMiddleware = new ExpressMiddleware(rateLimiter, options);
-
-// app.use(limitMiddleware.middleware((req, res, next) => {
-//   res.status(429).json({message: 'rate limit exceeded'});
-// }));
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/search', (req, res, next) => {
-  const seasonUrl = 'https://api.jikan.moe/v3/season/2018/summer'
-  const animeUrl = 'https://api.jikan.moe/v3/anime/'
+app.get('/search/:year/:season', (req, res, next) => {
+  
+  const year = req.params.year
+  const season = req.params.season
+  const seasonUrl = `https://api.jikan.moe/v3/season/${year}/${season}`
+  const animeUrl = "https://api.jikan.moe/v3/anime/"
   let animeID = "hello world"
-
+  
+  //Get anime season data via season API 
   const getSeasonData = async seasonUrl => {
     try {
       const response = await fetch(seasonUrl);
       const json = await response.json();
-      
       const songs = json["anime"]
+      
+      //Filter for anime IDs only 
       const filterTV = songs.filter((anime) => anime["type"] === "TV")
       const filterAnimeID = filterTV.map(anime => anime["mal_id"])
       
@@ -46,33 +33,42 @@ app.get('/search', (req, res, next) => {
     }
   };
   
+  //Call Season function 
   getSeasonData(seasonUrl);
   
   //Get anime songs from API 
   const getAnimeSongs = (animeID) => {
-    
     async function getAnimeSongData() {
       let start = 0
       let end = 20
         try {
           let promises = animeID.slice(start, end).map(id => {
             
-          //to request more anime song Data 
-          if(end <= animeID.length && (animeID.length - end) < 20){
-            start = end 
-            end += animeID.length - start
+            //To request more anime song data in increments
+            if(end <= animeID.length && (animeID.length - end) < 20){
+              start = end 
+              end = animeID.length - start
+            } else if (end <= animeID.length){
+              start = end 
+              end += 20
+            }
             
-          } else if (end <= animeID.length){
-            start = end 
-            end += 20
-          }
-          
-          let data =  fetch(`${animeUrl}${id}`).then((resp) => resp.json())
-          console.log(data)
-          return data
+            //Fetch anime song data from anime ID 
+            let data =  fetch(`${animeUrl}${id}`).then((resp) => resp.json()).then((anime) => {
+              return {
+                      "image_url": anime.image_url, 
+                      "title": anime.title, 
+                      "opening_themes": anime.opening_themes, 
+                      "ending_themes": anime.ending_themes,
+                      "url": anime.url
+                      }
+            })
+            return data
           });
+          
           let animeSong = await Promise.all(promises);
-          // console.log('animeSong =>', animeSong[0]);
+          
+          //Send all data to view
           res.send(animeSong)
 
         } catch (error){
@@ -92,3 +88,22 @@ app.get('/', function(request, response) {
 var listener = app.listen(process.env.PORT, function() {
   console.log('Your app is listening on port ' + listener.address().port);
 });
+
+
+
+// // RATE LIMITING FOR JIKAN JS
+// const rateLimit = require('ratelimit.js').RateLimit;
+// const redis = require('redis');
+// const ExpressMiddleware = require('ratelimit.js').ExpressMiddleware;
+
+// const rateLimiter = new rateLimit(redis.createClient(), [{interval: 1, limit: 10}]);
+
+// const options = {
+//   ignoreRedisErrors: true 
+// };
+
+// const limitMiddleware = new ExpressMiddleware(rateLimiter, options);
+
+// app.use(limitMiddleware.middleware((req, res, next) => {
+//   res.status(429).json({message: 'rate limit exceeded'});
+// }));
